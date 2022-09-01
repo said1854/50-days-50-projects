@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earth Surface Temperature Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+        canvas {
+            width: 100px;
+            height: 100px;
+        }
+
+        h1 {
+            font-family: sans-serif;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>This page shows the earth's surface average temperature from 1880 to the present.</h1>
+    <canvas id="chart"></canvas>
+
+
+    <script>
+        const xlabels = [];
+        const ytemps = [];
+        chartIt();
+
+        async function chartIt() {
+            await getData();
+            const ctx = document.getElementById('chart').getContext('2d');
+            const myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: xlabels,
+                    datasets: [{
+                        label: 'Global Avarage Temperature',
+                        data: ytemps,
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            ticks: {
+                                // Include a dollar sign in the ticks
+                                callback: function (value, index, ticks) {
+                                    return value + '°';
+                                }
+                            }
+                        }
+                    },
+                    animations: {
+                        tension: {
+                            duration: 2000,
+                            easing: 'linear',
+                            from: 1.5,
+                            to: 0,
+                            loop: true
+                        }
+                    },
+                }
+
+            })
+        }
+
+
+
+        async function getData() {
+            const response = await fetch("air_temp.csv");
+            const data = await response.text();
+            const rows = data.split("\n").slice(1);
+            rows.forEach(elt => {
+                const row = elt.split(',');
+                const year = row[0];
+                xlabels.push(year);
+                const temp = row[1];
+                ytemps.push(parseFloat(temp) + 14);
+                console.log(year, temp);
+            })
+        }
+    </script>
+
+</body>
+
+</html>
